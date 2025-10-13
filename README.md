@@ -1,0 +1,3 @@
+PART A
+- IOS APPLICATION
+- THIS APP IS AN GAME WHICH USES THE ARKit Library which has CoreData Storage
