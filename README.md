@@ -1,2 +1,0 @@
-# BlockFitAR
-IOS AR Game
