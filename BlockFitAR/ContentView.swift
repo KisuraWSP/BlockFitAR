@@ -1,86 +1,62 @@
-//
-//  ContentView.swift
-//  BlockFitAR
-//
-//  Created by Kisura W.S.P on 2025-10-13.
-//
-
 import SwiftUI
-import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-            Text("Select an item")
-        }
-    }
+        TabView {
+            PlayRoot()
+                .tabItem { Label("Play", systemImage: "arkit") }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            AboutView()
+                .tabItem { Label("About", systemImage: "info.circle") }
 
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
+            ProgressListView()
+                .tabItem { Label("Data", systemImage: "list.bullet.rectangle.portrait") }
         }
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
+// MARK: - Play tab
+private struct PlayRoot: View {
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    NavigationLink {
+                        ARPuzzleView(level: demoLevels[0])
+                    } label: {
+                        Label("Quick Start (L1)", systemImage: "play.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(DS.brand)
+                    }
+
+                    NavigationLink("Level Select") { LevelSelectView() }
+                } header: { Text("Play") }
+
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Tip")
+                            .font(.headline).foregroundStyle(DS.brand)
+                        Text("Scan a bright, textured surface. Tap to spawn blocks. Tap a block for options. Triple-tap to snap.")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+            .navigationTitle("BlockFit AR")
+        }
+    }
+}
+
+struct LevelSelectView: View {
+    var body: some View {
+        List(demoLevels) { level in
+            NavigationLink(level.displayName) { ARPuzzleView(level: level) }
+        }
+        .navigationTitle("Levels")
+    }
+}
+
 
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
 }

@@ -16,6 +16,7 @@ struct BlockFitARApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .tint(DS.brand)
         }
     }
 }
